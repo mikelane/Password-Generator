@@ -1,79 +1,64 @@
-# passwordGenerator.py
+#!/usr/bin/env python3
+"""
+Generates a random password that is between 8 and 50 characters long and contains
+at least 1 lowercase letter, 1 capital letter, 1 digit, and 1 punctuation mark.
+"""
 
+import string
 import random
+import re
 
-def main():
-    print("Welcome to Password Generator v1.0 \n")
+
+def gen_password(length: int = 8) -> str:
+    """
+    Generate the random password
+    :return: The password string
+    """
+    return ''.join([random.choice(string.ascii_letters + string.digits + string.punctuation) for _ in range(length)])
+
+
+def validate_password(password: str) -> bool:
+    """
+    Ensure the password meets the requirements.
+    :param password: The password string to check
+    :return: True if valid, False if not
+    """
+    pattern = re.compile(r'((?=.*\d)'
+                         r'(?=.*[{lower}])'
+                         r'(?=.*[{upper}])'
+                         r'(?=.*[{punct}]))'.format(lower=string.ascii_lowercase,
+                                                    upper=string.ascii_uppercase,
+                                                    punct=string.punctuation))
+    return bool(re.match(pattern=pattern, string=password))
+
+
+def generate_valid_password(length: int = 8) -> str:
+    """
+    Keep generating passwords until a valid password is created
+    :return: Validated password string
+    """
+    password = gen_password(length=length)
+    while not validate_password(password=password):
+        password = gen_password()
+    return password
+
+
+def main() -> None:
+    print('Welcome to Password Generator v2.0\n')
+    pass_length = 0
     while True:
-        length = eval(input("Enter how long you would like your password to be > "))
-        if length < 8:
-            print("A secure password should have a length greater than 8 please try again!")
+        try:
+            pass_length = int(input('Enter the desired password length: '))
+        except (ValueError, SyntaxError):
+            print('Sorry, I didn\'t understand that input. Try again.')
+            continue
+        if pass_length < 8:
+            print('That\'s too short, please try again!')
         else:
             break
-    generator(length)
-
-    
-def generator(y):
-    "Generates the password"
-    x = True
-    i=0
-    charType = []
-    password = []
-    #Initialises a list to be the correct size
-    for i in range(0, y):
-        charType.append("a")
-        password.append("a")
-        
-    while x == True:
-        #Adds random numbers that symbolise different character types
-        for i in range(0,y):
-            charType[i] = random.randrange(1,5)
-        for i in range(0,y):
-            #Creates a random lower case character
-            if charType[i] == 1:
-                randomLower = random.randrange(97,124)
-                password[i] = chr(randomLower)
-            #Creates a random upper case character
-            elif charType[i] == 2:
-                randomUpper = random.randrange(65,91)
-                password[i] = chr(randomUpper)
-            #Creates a random number character
-            elif charType[i] == 3:
-                randomNum = random.randrange(48,58)
-                password[i] = chr(randomNum)
-            #Creates a random special character
-            elif charType[i] == 4:
-                randomSpecial = random.randrange(33,48)
-                password[i] = chr(randomSpecial)
-
-        (x, y) = validator(password, y)
+    password = generate_valid_password(pass_length)
+    print('Your {} character password is: \n\n\t{}'.format(len(password), password))
 
 
-def validator(password, y):
-    "Validates the password"
-    lower = 0
-    upper = 0
-    num = 0
-    special = 0
-
-    #Checks what type of characters exist in the password
-    for i in range(0,y):
-        if ord(password[i]) >= 97 and ord(password[i]) <= 122:
-            lower += 1
-        elif ord(password[i]) >= 65 and ord(password[i]) <= 90:
-            upper += 1
-        elif ord(password[i]) >= 48 and ord(password[i]) <= 57:
-            num += 1
-        elif ord(password[i]) >= 33 and ord(password[i]) <= 47:
-            special += 1
-            
-    #Checks that the password contains at least one of each character type      
-    if lower > 0 and upper > 0 and num > 0 and special > 0:
-        print("Your password has been successfully generated and validated!")
-        print("Password > " + ''.join(password))
-        return (False, y)
-
-    else:
-        return (True, y)
-             
-main()
+if __name__ == '__main__':
+    main()
